@@ -1,6 +1,8 @@
 require 'sinatra'
 require 'sinatra/activerecord'
 require 'json'
+require_relative 'models/spaces'
+
 Dir["models/*.rb"].each {|file| require_relative file }
 
 class Spacechat < Sinatra::Base
@@ -25,19 +27,53 @@ class Spacechat < Sinatra::Base
   end
 
   get "/user/:user_id/spaces" , :auth => true do
-    #params[user_id] = ...
+    id = params[:user_id]
+    if(User.exists?(id))
+      User.find(id).spaces.to_json
+    else
+      status 404
+    end
   end
 
-  get "/space/:space_id/messages" ,:auth => true do
+  get "/space/:space_id" ,:auth => true do
+    id = params[:space_id]
+    if(Space.exists?(id))
+      Space.find(id).messages.to_json
+    else
+      status 404
+    end
   end
 
   post "/space/:space_id" ,:auth => true do
+    payload = JSON.parse(request.body.read)
+    id = params[:space_id]
+    user_id = payload[:user_id]
+    if(SpacesUser.exists?({:user_id => user_id, :space_id => id}))
+      Message.new({user_id: user_id,
+                  text: payload[:text],
+                  picture_url: payload[:picture_url],
+                  space_id: id}).save
+    else
+      status 403
+    end
   end
 
   #What would do more RESTful?
-  post "/space/join" ,:auth => true do
+  post "/space/:space_id/join" ,:auth => true do
+    id = params[:space_id]
+    payload = JSON.parse(request.body.read)
+    if (Space.exists?({invite_code: payload[:invite_code], id:id}))
+      SpacesUser.new({user_id: payload[:user_id],
+                      space_id: id}).save
+      Space.find(id).messages.to_json
+    else
+      status 403
+    end
   end
 
   post "/space" ,:auth =>true do
+    payload = JSON.parse(request.body.read)
+    # TODO create a random invite code and return the whole created record to
+    # the user
   end
 end
