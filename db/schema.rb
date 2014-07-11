@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140703184443) do
+ActiveRecord::Schema.define(version: 20140711184828) do
 
   create_table "messages", force: true do |t|
     t.integer  "space_id"
@@ -20,6 +20,10 @@ ActiveRecord::Schema.define(version: 20140703184443) do
     t.string   "picture_url"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "content_id"
+    t.string   "content_image_url"
+    t.string   "content_name"
+    t.string   "content_author"
   end
 
   create_table "spaces", force: true do |t|
