@@ -34,9 +34,9 @@ class Spacechat < Sinatra::Base
   end
 
   get "/user/:user_id/space/:space_id" ,:auth => true do
-    id, user_id = params[:space_id].to_i, params[:user_id].to_i
+    space_id, user_id = params[:space_id].to_i, params[:user_id].to_i
     if User.can_access_space?(user_id,space_id)
-      Space.find(id).messages.to_json
+      Space.find(space_id).messages.to_json
     else
       throw :halt, [404, "User cannot access space"]
     end
