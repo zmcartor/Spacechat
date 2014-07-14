@@ -25,9 +25,9 @@ class Spacechat < Sinatra::Base
   end
 
   get "/user/:user_id/spaces" , :auth => true do
-    id = params["user_id"]
-    if User.exists?(id)
-      User.find(id).spaces.to_json
+    user_id = params[:user_id].to_i
+    if User.exists?(user_id)
+      User.find(user_id).spaces.to_json
     else
       throw :halt,  [404, "User does not exist"]
     end
@@ -46,7 +46,6 @@ class Spacechat < Sinatra::Base
     payload = JSON.parse(request.body.read)
     space_id, user_id = params[:space_id].to_i, params[:user_id].to_i
     unless User.can_access_space?(user_id, space_id)
-      puts "whooop!"
       throw :halt, [403, "User cannot access space"]
     end
     message = Message.new(payload)
@@ -77,6 +76,16 @@ class Spacechat < Sinatra::Base
       joined_space.messages.to_json
     else
       throw :halt, [403, "Space does not exist"]
+    end
+  end
+
+  delete "/user/:user_id/space/space_id" do
+    space_id, user_id = params[:space_id].to_i, params[:user_id].to_i
+    if User.can_access_space?(user_id,space_id)
+      SpacesUser.destroy_all({user_id: user_id, space_id:space_id})
+      status 200
+    else
+      throw :halt, [404, "User cannot access space"]
     end
   end
 
