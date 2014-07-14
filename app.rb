@@ -34,8 +34,7 @@ class Spacechat < Sinatra::Base
   end
 
   get "/user/:user_id/space/:space_id" ,:auth => true do
-    id = params["space_id"]
-    user_id = params["user_id"]
+    id, user_id = params[:space_id].to_i, params[:user_id].to_i
     if User.can_access_space?(user_id,space_id)
       Space.find(id).messages.to_json
     else
@@ -45,12 +44,14 @@ class Spacechat < Sinatra::Base
 
   post "/user/:user_id/space/:space_id" ,:auth => true do
     payload = JSON.parse(request.body.read)
-    space_id, user_id = params["space_id"], params["user_id"]
-    unless User.can_access_space?(user_id,space_id)
+    space_id, user_id = params[:space_id].to_i, params[:user_id].to_i
+    unless User.can_access_space?(user_id, space_id)
+      puts "whooop!"
       throw :halt, [403, "User cannot access space"]
     end
     message = Message.new(payload)
-    unless messsage.save
+    message.space_id, message.user_id = space_id, user_id
+    unless message.save
       throw :halt, [400, message.errors.messages.to_json]
     end
     message.to_json
