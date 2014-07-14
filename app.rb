@@ -16,7 +16,7 @@ class Spacechat < Sinatra::Base
 
   set(:auth) do |x|
     condition do
-        redirect("/" , 303) if not authorized?
+        throw :halt, [403, "Not Authorized"] if not authorized?
       end
   end
 
@@ -24,70 +24,85 @@ class Spacechat < Sinatra::Base
     "Spacechat server ~~~>[o]>"
   end
 
-  get "/user/:user_id/space/index" , :auth => true do
-    id = params[:user_id]
+  get "/user/:user_id/spaces" , :auth => true do
+    id = params["user_id"]
     if User.exists?(id)
       User.find(id).spaces.to_json
     else
-      status 404
+      throw :halt,  [404, "User does not exist"]
     end
   end
 
   get "/user/:user_id/space/:space_id" ,:auth => true do
-    id = params[:space_id]
-    user_id = params[:user_id]
+    id = params["space_id"]
+    user_id = params["user_id"]
     if User.can_access_space?(user_id,space_id)
       Space.find(id).messages.to_json
     else
-      status 404
+      throw :halt, [404, "User cannot access space"]
     end
   end
 
-  #post a message to a space
   post "/user/:user_id/space/:space_id" ,:auth => true do
     payload = JSON.parse(request.body.read)
-    space_id, user_id = params[:space_id], params[:user_id]
+    space_id, user_id = params["space_id"], params["user_id"]
     unless User.can_access_space?(user_id,space_id)
-      status 403
-      return
+      throw :halt, [403, "User cannot access space"]
     end
     message = Message.new(payload)
-    if messsage.save
-      message.to_json
-    else
-      message.errors.messages.to_json
+    unless messsage.save
+      throw :halt, [400, message.errors.messages.to_json]
     end
+    message.to_json
   end
 
-  post "/space/:space_id/join" ,:auth => true do
+  post "/space/join" ,:auth => true do
     payload = JSON.parse(request.body.read)
-    unless payload.has_key? :invite_code
-      status 404
-      return
+    unless payload.has_key? "invite_code"
+        throw :halt, [404, "Missing invite code"]
     end
-
-    space_id = params[:space_id]
-    if (Space.exists?({invite_code: payload[:invite_code], id:space_id}))
-
+    if (Space.exists?({invite_code: payload["invite_code"]}))
       #create a new user in the system if not exist
-      unless User.exists? payload[:user_object][:id]
-        new_user = User.new(payload[:user_object])
+      unless User.exists? payload["user"]["id"]
+        new_user = User.new(payload["user"])
         unless new_user.save
           return new_user.errors.messages.to_json
         end
       end
-      SpacesUser.new({user_id: payload[:user_object][:id],
-                      space_id: id}).save
-      Space.find(space_id).messages.to_json
+      joined_space = Space.where({invite_code:payload["invite_code"]})[0]
+      unless SpacesUser.exists?({user_id: payload["user"]["id"], space_id:joined_space.id})
+        SpacesUser.new({user_id: payload["user"]["id"], space_id:joined_space.id}).save
+      end
+      joined_space.messages.to_json
     else
-      status 403
+      throw :halt, [403, "Space does not exist"]
     end
   end
 
-  #Include user info so users can get into system when creating new space too!
   post "/space" ,:auth =>true do
     payload = JSON.parse(request.body.read)
-    # TODO create a random invite code and return the whole created record to
-    # the user
+    unless payload["user"]["id"]
+      throw :halt, [400, "Missing user id"]
+    end
+    user_id = payload["user"]["id"]
+    #create a new user in the system if not exist
+    unless User.exists? user_id
+      new_user = User.new(payload["user"])
+      unless new_user.save
+        return new_user.errors.messages.to_json
+      end
+    end
+    payload["space"]["invite_code"] = Space.create_invite_code
+    new_space = Space.new(payload["space"])
+    unless new_space.save
+      throw :halt, [400, new_space.errors.messages.to_json]
+    end
+    user = User.find(user_id)
+    user.spaces << new_space
+    unless user.save
+      throw :halt [400, "Could not save space"]
+    end
+    new_space.to_json
   end
+
 end
