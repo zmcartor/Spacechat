@@ -1,0 +1,8 @@
+# Create a space
+curl -H "Content-Type: application/json" -X POST -d @create_space.json http://localhost:9292/space
+
+# Fetch my spaces by userId
+curl http://localhost:9292/user/444/spaces
+
+# Redeem invite code
+curl -H "Content-Type: application/json" -X POST -d @redeem_invite_code.json http://localhost:9292/space/join

@@ -1,0 +1,9 @@
+{
+  "user" : { "name" : "Serious Person",
+             "id": 444
+           },
+  "space" : {
+    "name" : "Serious Space",
+    "banner_url" : "http://google.com"
+  }
+}
