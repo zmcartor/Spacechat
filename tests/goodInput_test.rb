@@ -3,7 +3,12 @@ require_relative './test_helper'
 class GoodInputTest < SpacechatTestHelper
   include Rack::Test::Methods
 
-  def test_hello_world
+  def headers
+    #return needed headers and HTTP-basicAuth stuff !!
+  end
+
+
+  def test_hello_server
     get '/'
     assert last_response.ok?
     assert_equal "Spacechat server ~~~>[o]>", last_response.body
@@ -11,6 +16,8 @@ class GoodInputTest < SpacechatTestHelper
 
   #get "/user/:user_id/space/:space_id
   def test_user_list_spaces
+    u = User.find(33)
+    puts "name is: #{u.name}"
     post '', {:bar => "baz"}.to_json, "CONTENT_TYPE" => "application/json"
     # validate response here
   end
@@ -20,5 +27,9 @@ class GoodInputTest < SpacechatTestHelper
 
   end
 
+  #post "/space/join"
+  def test_join_space
+
+  end
 
 end
