@@ -55,6 +55,24 @@ class FunctionalTests < SpacechatTestHelper
     assert !last_response.ok?
   end
 
-  
+  def test_post_to_space_no_auth
+    post "/user/33/space/1", {text: "oh hi!", picture_url:"http://cool.com/pic.jpg"}
+    assert !last_response.ok?
+  end
+
+  def test_post_to_space_user_not_allowed
+    authorize_myself
+    post "/user/34343/space/1", {text: "oh hi!", picture_url:"http://cool.com/pic.jpg"}.to_json
+    assert !last_response.ok?
+  end
+
+  def test_post_to_space
+    authorize_myself
+    post "/user/33/space/1", {text: "oh hi!", picture_url:"http://cool.com/pic.jpg"}.to_json
+    assert last_response.ok?
+    response_json = JSON.parse(last_response.body)
+    assert response_json['text'] == 'oh hi!', "message json not returned"
+  end
+
 
 end
