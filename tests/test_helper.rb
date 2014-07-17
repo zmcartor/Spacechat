@@ -30,6 +30,14 @@ class SpacechatTestHelper < MiniTest::Unit::TestCase
       header "Content-Type", "application/json"
   end
 
+  def message_json
+    {text: "oh hi!", picture_url:"http://cool.com/pic.jpg"}.to_json
+  end
+
+  def join_space_json
+    {invite_code:"beepbeep", user: {id:44, name: "Mephisto"}}.to_json
+  end
+
   def authorize_myself
     pass = YAML.load_file('./config/pass.yml')['basic']
     authorize pass['user'], pass['pass']

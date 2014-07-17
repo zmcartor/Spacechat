@@ -80,7 +80,7 @@ class Spacechat < Sinatra::Base
     end
   end
 
-  delete "/user/:user_id/space/space_id" do
+  delete "/user/:user_id/space/:space_id", :auth=>true do
     space_id, user_id = params[:space_id].to_i, params[:user_id].to_i
     if User.can_access_space?(user_id,space_id)
       SpacesUser.destroy_all({user_id: user_id, space_id:space_id})
