@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'sinatra/activerecord'
 require 'json'
+require 'yaml'
 require_relative 'models/spaces'
 Dir["models/*.rb"].each {|file| require_relative file }
 
@@ -8,10 +9,10 @@ class Spacechat < Sinatra::Base
   register Sinatra::ActiveRecordExtension
 
   def authorized?
-    return true #for testing
+    pass = YAML.load_file('./config/pass.yml')['basic']
     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-    #TODO certainly want to change this for your specific environment
-    @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['admin', 'admin']
+    @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == [pass['user'], pass['pass']]
+    true
   end
 
   set(:auth) do |x|
@@ -25,6 +26,7 @@ class Spacechat < Sinatra::Base
   end
 
   get "/user/:user_id/spaces" , :auth => true do
+    puts request["Authorization"]
     user_id = params[:user_id].to_i
     if User.exists?(user_id)
       User.find(user_id).spaces.to_json
