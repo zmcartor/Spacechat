@@ -28,9 +28,11 @@ class SpacechatTestHelper < MiniTest::Unit::TestCase
 
   def setup
       header "Content-Type", "application/json"
-      
-      pass = YAML.load_file('./config/pass.yml')['basic']
-      authorize pass['user'], pass['pass']
+  end
+
+  def authorize_myself
+    pass = YAML.load_file('./config/pass.yml')['basic']
+    authorize pass['user'], pass['pass']
   end
 
   def app
