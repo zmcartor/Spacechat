@@ -30,12 +30,16 @@ class SpacechatTestHelper < MiniTest::Unit::TestCase
       header "Content-Type", "application/json"
   end
 
-  def message_json
-    {text: "oh hi!", picture_url:"http://cool.com/pic.jpg"}.to_json
+  def message_hash
+    {text: "oh hi!", picture_url:"http://cool.com/pic.jpg"}
   end
 
-  def join_space_json
-    {invite_code:"beepbeep", user: {id:44, name: "Mephisto"}}.to_json
+  def join_space_hash
+    {invite_code:"beepbeep", user: {id:44, name: "Mephisto"}}
+  end
+
+  def create_space_hash
+    {space:{name: "Neat Space", banner_url:"http://neatbanner.com"}, user:{id: 12, name: "Neat Guy"}}
   end
 
   def authorize_myself
