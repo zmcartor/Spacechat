@@ -49,9 +49,25 @@ content_author: string
 Response: The message payload but with an added ```id:``` attribute.
 
 #### post "/space/join"
-Join a space with the invite code specified within the JSON payload. 
+Join a space with the invite code specified within the JSON payload. A user object with a unique id must also be included within the post body.
+
+Request Body
+
+```
+{
+invite_code:"beepbeep", 
+user: {id:44, name: "Mephisto"}
+}
+```
+
+Response Body
+
+An array of messages for the given spaces
+
 
 #### delete "/user/:user_id/space/:space_id"
+Remove group membership from a space. HTTP 200 is returned upon successful request. There is no return body. Death is forever.
+
 
 #### post "/space"
 
