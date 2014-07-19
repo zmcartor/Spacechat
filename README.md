@@ -70,7 +70,24 @@ Remove group membership from a space. HTTP 200 is returned upon successful reque
 
 
 #### post "/space"
+Create a new space. 
 
+Request Body
 
-
-
+``` 
+{space:{name: "Neat Space", banner_url:"http://neatbanner.com"},
+ user:{id: 12, 
+ name: "Neat Guy"}
+ }
+ 
+ ```
+ 
+ Response Body: The newly created space and invite code.
+ 
+ ```
+ {
+ name: "Neat Space", 
+ banner_url:"http://neatbanner.com",
+ invite_code: "blahbalh123"
+ }
+ ```
